@@ -1,8 +1,8 @@
-/*
- *  BRAINTECH PRIVATE LIMITED 
- *  JOHN MELODY MELISSA 
+/** 
+ *  @AUTHOR: JOHN MELODY MELISSA 
  */
-int k;
+
+int s;
 void setup() {
   // initialize serial:
   Serial.begin(115200);
@@ -10,11 +10,10 @@ void setup() {
 }
 
 void loop() {
-  // if there's any serial available, read it:
+  // IF  THERE 'S ANY SERIAL AVAILABLE, READ IT:
   while (Serial.available() > 0) {
-    int k = Serial.read();
+    int s = Serial.read();
     Serial.println(k); 
-    // Serial.println(k, HEX);  //**for HEX
-    }
-  
+    //Serial.println(k, HEX);  //**FOR HEX
+    } 
 }
