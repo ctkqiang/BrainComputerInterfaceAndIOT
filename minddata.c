@@ -1,81 +1,78 @@
-/*
-*JOHN MELODY ME
-*In this event, our company will provide a 2-channel EEG test module for the participating teams.
-*This module is used to collect EEG data and convert it into a 16-bit time domain signal.
-*Brain wave module operating voltage is 3.3v, built-in 50hz filter circuit
-*The module output is a UART serial port, the serial port parameters and data format are as follows
-
-Serial output configuration:
-Check digit: None
-Data bit: 8bit
-Stop bit: 1bit
-Baud rate: 115200
-
-Data Format:    The P2 Firmware Protocol was the inital transmission protocol of the OpenEEG project,
-        used by ModularEEG. It is compatible with the ElectricGuru application.
-        P2 uses 17 data bytes to transmit 6 channels of EEG data:
-
-
-        1: sync0;          // synchronisation byte 1 = 0xa5  
-        2: sync1;          // synchronisation byte 2 = 0x5a
-        3: version;        // version number = 2
-        4: count;          // packet counter. Increases by 1 each packet.
-        5: Chn1high        // channel 1 high byte
-        6: Chn1low         // channel 2 low byte
-        7: Chn2high        // channel 2 high byte
-        8: Chn2low         // ...
-        9: Chn3high
-        10: Chn3low
-        11: Chn4high
-        12: Chn4low
-        13: Chn5high
-        14: Chn5low
-        15: Chn6high
-        16: Chn6low        // channel 6 low byte
-        17: switches;      // State of PD5 to PD2, in bits 3 to 0.
-
-        // 17 байтов данных для передачи 6 каналов данных ЭЭГ
-
-        A5 5A 02 39 02 33 01 EB 02 22 01 B3 02 00  02 00 0F
-        -- -- -- -- ----- ----- ----- ----- ----- -----  --
-        |  |  |  |   |     |     |     |     |     |
-        |  |  |  |   |     |     |     |     |     +-------- ch6
-        |  |  |  |   |     |     |     |     +-------------- ch5
-        |  |  |  |   |     |     |     +-------------------- ch4
-        |  |  |  |   |     |     +-------------------------- ch3
-        |  |  |  |   |     +-------------------------------- ch2
-        |  |  |  |   +-------------------------------------- ch1
-        |  |  |  +------------------------------------------ packet counter. Increases by 1 each packet.
-        |  |  +--------------------------------------------- version number = 2
-        |  +------------------------------------------------ synchronisation byte 2 = 0x5a
-        +--------------------------------------------------- synchronisation byte 1 = 0xa5
-
-Here we provide a 2-channel module, so the 9th to 16th data is meaningless.
-
-
-Here we give two sample code (the team can use this as a template to write data reading software)
-
-Parsing code example:
-Embedded code (c language)
+/**
+* @AUTHOR: JOHN MELODY ME
+* This module is used to collect EEG data and convert it into a 16-bit time domain signal.
+* Brain wave module operating voltage is 3.3v, built-in 50hz filter circuit
+* The module output is a UART serial port, the serial port parameters and data format are as follows
+*
+* Serial output configuration:
+* Check digit: None
+* Data bit: 8bit
+* Stop bit: 1bit
+* Baud rate: 115200
+*
+*        Data Format:    
+*        The P2 Firmware Protocol was the inital transmission protocol of the OpenEEG project,
+*        used by ModularEEG. It is compatible with the ElectricGuru application.
+*        P2 uses 17 data bytes to transmit 6 channels of EEG data:
+*
+*        1: sync0;          // synchronisation byte 1 = 0xa5  
+*        2: sync1;          // synchronisation byte 2 = 0x5a
+*        3: version;        // version number = 2
+*        4: count;          // packet counter. Increases by 1 each packet.
+*        5: Chn1high        // channel 1 high byte
+*        6: Chn1low         // channel 2 low byte
+*        7: Chn2high        // channel 2 high byte
+*        8: Chn2low        
+*        9: Chn3high
+*        10: Chn3low
+*        11: Chn4high
+*        12: Chn4low
+*        13: Chn5high
+*        14: Chn5low
+*        15: Chn6high
+*        16: Chn6low        // channel 6 low byte
+*        17: switches;      // State of PD5 to PD2, in bits 3 to 0.
+*
+*       // 17 байтов данных для передачи 6 каналов данных ЭЭГ
+*
+*        A5 5A 02 39 02 33 01 EB 02 22 01 B3 02 00  02 00 0F
+*        -- -- -- -- ----- ----- ----- ----- ----- -----  --
+*        |  |  |  |   |     |     |     |     |     |
+*        |  |  |  |   |     |     |     |     |     +-------- ch6
+*        |  |  |  |   |     |     |     |     +-------------- ch5
+*        |  |  |  |   |     |     |     +-------------------- ch4
+*        |  |  |  |   |     |     +-------------------------- ch3
+*        |  |  |  |   |     +-------------------------------- ch2
+*        |  |  |  |   +-------------------------------------- ch1
+*        |  |  |  +------------------------------------------ packet counter. Increases by 1 each packet.
+*        |  |  +--------------------------------------------- version number = 2
+*        |  +------------------------------------------------ synchronisation byte 2 = 0x5a
+*        +--------------------------------------------------- synchronisation byte 1 = 0xa5
+*
+*       Here we provide a 2-channel module, so the 9th to 16th data is meaningless.
+*       Here we give two sample code (the team can use this as a template to write data reading software)
+*
+*       Parsing code example:
+*       Embedded code (C language)
+*       Serial port receiving and parsing : 
+*       For the convenience of reading, the algorithm is not simplified,
 */
-///////////////////////////////////////
-// Serial port receiving and parsing : ///////////////////////////////
-// For the convenience of reading, the algorithm is not simplified,/
-////////////////////////////////////////////////////////////////////
-    #define FFT_N 256 // amount of data per second;
-    #define Chnum_MAX 2 //The number of brainwave channels The chip provided this time is a 2-channel version.
-    S16 MindDataBuf[FFT_N][Chnum_MAX]; // extracted one second data
-    U8 MindData_used=1; //Data has been used
-    Void USART1_IRQHandler(void)
-    {
-        Static u16 MindData_num=0; //256 count
-        Static u8 UART_receive_num = 0; //frame format count
-        Static u8 MindDatabyteBuf[Chnum_MAX][2]={0}; //Valid data extracted in each frame (before and after bytes)
-        If ((USART_GetITStatus(USART1, USART_IT_RXNE)!=RESET)) / / system interrupt
-        {
+
+
+#define FFT_N 256 // AMOUNT OF DATA PER/SEC;
+#define Chnum_MAX 2 // THE NUMBER OF BRAINWAVE CHANNELS THE CHIP PROVIDED THIS TIME IS A 2-CHANNEL VERSION.
+S16 MindDataBuf[FFT_N][Chnum_MAX]; // extracted one second data
+U8 MindData_used=1; // DATA HAS BEEN USED;
+
+Void USART1_IRQHandler(void) {
+        Static u16 MindData_num=0; // 256 COUNT;
+        Static u8 UART_receive_num = 0; // FRAME FORMAT COUNT;
+        Static u8 MindDatabyteBuf[Chnum_MAX][2]={0}; // Valid data extracted in each frame (before and after bytes)
+        If ((USART_GetITStatus(USART1, USART_IT_RXNE)!=RESET)) {
             U8 tempByts = (uint8_t)USART1->DR;//Read one bit of data from the register
-            If(MindData_used==0x01)//The current one second data can be received again after being used (normally, the data will be transferred in time             without causing data block)
-                {
+                // The current one second data can be received again after being used
+                // (normally, the data will be transferred in time without causing data block)
+            If(MindData_used==0x01) {
                     switch (UART_receive_num)
                     {
                         case 0:
