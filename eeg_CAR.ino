@@ -1,100 +1,114 @@
-//Initializing the Pin
-/*
-*  ALL RIGHT RESERVED || ANG JIA YI COPYRIGHT
-*/
-int ran1;
-int ran2;
-int power=11;
-int car1 = 7;
-int car2 = 8;
-int button = 4;
-int input1 = 0;
-int input2 = 0;
-int condition = 1;
+/**
+ * Copyright 2020 © John Melody Melissa
+ 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @Author : John Melody Melissa
+ * @Copyright: John Melody Melissa  © Copyright 2020
+ * @INPIREDBYGF : Tan Sin Dee <3
+ * @Project : Brain Computer Interface Car
+ * This is a source code for Mind Controlled Car
+ * @DEMONSTARTION : https://vt.tiktok.com/65HrhM/
+ *
+ */
 
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
-pinMode(car1,OUTPUT);
-pinMode(car2,OUTPUT);
-pinMode(power,OUTPUT);
-pinMode(button,INPUT);
-pinMode(13,OUTPUT);
-digitalWrite(power,HIGH);
-analogWrite(car1,0);
-analogWrite(car2,0);
-//delay(2000);
+int runOne, runTwo;
+int power = 11;
+int carOne, carTwo;
+int button;
+int inputOne, inputTwo;
+int Condition = 1;
+int serial;
+
+serial = 9600;
+inputOne = 0;
+inputTwo = 0;
+button = 4;
+carOne = 7;
+carTwo = 8;
+
+void setup () {
+    Serial.begin(serial);
+    pinMode(carOne, OUTPUT);
+    pinMode(carTwo, OUTPUT);
+    pinMode(power, OUTPUT);
+    pinMode(button, OUTPUT);
+    digitalWrite(power, OUTPUT);
+    analogWrite(carOne, 0);
+    analogWrite(carTwo, 0);
+    // delay(2000);
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop () {
+    if (digitalRead (button) == LOW) {
+        while (digitalRead (button) == LOW);
+        if (Condition == 0) {
+            Condition = 1;
+            digitalWrite(power, HIGH);
+            analogWrite(carOne, 0);
+            analogWrite(carTwo, 0);
+            delay(1000);
+        } else {
+          Condition = 0;
+          digitalWrite(power, LOW);
+          delay(1000);
+       }
+    } else if (Condition == 0){
+      // If There's noBrain Signal,
+      // run te car randomly;
+      runOne = random(150, 210);
+      runTwo = random(150, 210);
+      analogWrite(carOne, runOne);
+      analogWrite(carTwo, runTwo);
+      delay(500);
+      // LED Indicate if There's no EEG signal received.
+      digitalWrite(13, LOW);
+    } else if (Condition == 1){
+      digitalWrite(13, HIGH);
+      inputOne = analogRead(A0);
+      inputTwo = analogRead(A2);
+      Serial.print("INPUT ONE = " + inputOne);
+      Serial.print("INPUT TWO = " + inputTwo);
 
-if(digitalRead(button) == LOW)
-{
-  while(digitalRead(button) ==LOW);
-  if(condition == 0)
-  {condition = 1;digitalWrite(power,HIGH);analogWrite(car1,0);analogWrite(car2,0);delay(1000);}
-  else
-  {condition = 0;digitalWrite(power,LOW);delay(1000);}
-}
+      if(inputOne > 400){
+      analogWrite(carOne, 0);
+      }
 
-else if(condition==0) //no brain control
-{
-  ran1=random(150,210);
-  ran2=random(150,210);
-  analogWrite(car1,ran1);
-  analogWrite(car2,ran2);
-  delay(500);
-  digitalWrite(13,LOW); //led light indicator no brain control 13 light off
-}
+      if(inputTwo > 400){
+      analogWrite(carTwo, 0);
+      }
 
-else if(condition ==1)
-{
-    digitalWrite(13,HIGH);
-    input1=analogRead(A0);
-    input2=analogRead(A2);
-    Serial.print("input1=");
-    Serial.println(input1);
-    Serial.print("input2=");
-    Serial.println(input2);
-    if(input1>400)
-    {
-      analogWrite(car1,0);
+      if(inputOne < 400 && inputOne > 100){
+      analogWrite(carOne, 160);
+      }
+
+      if(inputTwo < 400 && inputTwo > 100){
+      analogWrite(carTwo, 160);
+      }
+
+      if(inputOne < 100 && inputOne > 1){
+      analogWrite(carOne, 180);
+      }
+
+      if(inputTwo < 100 && inputTwo > 1){
+      analogWrite(carTwo, 180);
+      }
+
+      if(inputOne == 0){
+      analogWrite(carOne, 210);
+      }
+
+      if(inputTwo == 0){
+      analogWrite(carTwo, 210);
+      }
+
+      delay(200);
+    } else {
+       analogWrite(carOne, 0);
+       analogWrite(carTwo, 0);
     }
-    if(input2>400)
-    {
-      analogWrite(car2,0);
-    }
-   
-    if(input1<400 && input1>100)
-    {
-      analogWrite(car1,160);
-    }
-    if(input2<400 && input2>100)
-    {
-      analogWrite(car2,160);
-    } 
-    if(input1<100 && input1>1)
-    {
-      analogWrite(car1,180);
-    }
-    if(input2<100 && input2>1)
-    {
-      analogWrite(car2,180);
-    } 
-    if(input1==0)
-    {
-      analogWrite(car1,210);
-    }
-    if(input2==0)
-    {
-      analogWrite(car2,210);
-    }
-    delay(200);
-}
-else
-{
-  analogWrite(car1,0);
-  analogWrite(car2,0);  
-}
 }
