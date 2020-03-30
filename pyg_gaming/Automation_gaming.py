@@ -1,6 +1,6 @@
 #!/usr/bin/env python 3
 # John Melody Me
-# The Most Simple one 
+# The Most Simple one
 import pyautogui as control
 import time as t
 
@@ -48,6 +48,7 @@ def goRight():
             message = "The Key \"D\" is Automated."
             print(message)
             break
+
 # Backward (S)
 def goBack():
     t.sleep(1)
@@ -70,7 +71,7 @@ def Jump():
         while w < 10 :
             t.sleep(1)
             control.keyDown('space')
-            message = "The Key \"S\" is Automated."
+            message = "The Key \"SpaceBar\" is Automated."
             control.keyDown('space')
             print(message)
             break
@@ -84,5 +85,3 @@ def Haha():
 
 # EXECUTION
 Haha()
-# # while True:
-#     Haha()
